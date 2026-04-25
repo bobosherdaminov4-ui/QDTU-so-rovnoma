@@ -1,0 +1,1 @@
+# QDTU-so-rovnoma
