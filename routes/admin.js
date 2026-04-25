@@ -1,24 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const path = require('path');
 const Admin = require('../models/Admin');
 const Survey = require('../models/Survey');
 const Response = require('../models/Response');
 const { authenticateAdmin, generateToken } = require('../middleware/auth');
 const upload = require('../config/cloudinary');
-
-// Rasm yuklash uchun konfiguratsiya
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-    cb(null, uniqueName);
-  }
-});
-
 
 async function attachVotesToSurvey(surveyDoc) {
   const survey = surveyDoc.toObject ? surveyDoc.toObject() : surveyDoc;
@@ -182,9 +169,6 @@ router.post('/surveys', authenticateAdmin, upload.single('image'), async (req, r
     res.json({ message: 'So\'rovnoma yaratildi', survey });
   } catch (error) {
     console.error('Survey create error:', error);
-    if (error instanceof multer.MulterError) {
-      return res.status(400).json({ error: 'Fayl yuklash xatosi: ' + error.message });
-    }
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({ error: messages.join(', ') });
