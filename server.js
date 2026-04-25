@@ -67,6 +67,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  
+  if (req.path.startsWith('/api/')) {
+    res.status(500).json({ error: err.message || 'Server xatosi' });
+  } else {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+});
+
 // Static files uchun fallback (HTML)
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
