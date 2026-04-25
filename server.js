@@ -42,7 +42,7 @@ app.post('/api/admin/test', (req, res) => {
   res.json({ message: 'OK', received: req.body });
 });
 
-// API Routes
+// API Routes (static files'dan OLDIN bo'lishi kerak!)
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -59,9 +59,17 @@ app.get('/test', (req, res) => {
   res.json({ status: 'ok', message: 'Server ishlayapti!' });
 });
 
-// 404 handler
+// 404 handler (API uchun JSON, boshqa uchun HTML)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Route topilmadi' });
+  }
+  next();
+});
+
+// Static files uchun fallback (HTML)
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route topilmadi' });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start server
