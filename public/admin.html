@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - QDTU So'rovnoma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'qdtu-blue': '#1e40af',
+                        'qdtu-light': '#3b82f6',
+                        'qdtu-dark': '#1e3a8a',
+                        'qdtu-gold': '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        }
+        .soft-shadow {
+            box-shadow: 0 10px 40px rgba(30, 64, 175, 0.1);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(30, 64, 175, 0.2);
+        }
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-qdtu-blue to-qdtu-light rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-user-shield text-3xl text-white"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800">Admin Kirish</h2>
+                <p class="text-gray-600 mt-2">QDTU So'rovnoma Tizimi</p>
+            </div>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Login</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-3 text-gray-400"><i class="fas fa-user"></i></span>
+                        <input type="text" id="username" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue focus:border-transparent" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2 font-semibold">Parol</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-3 text-gray-400"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="password" class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue focus:border-transparent" required>
+                        <button type="button" onclick="togglePassword('password', this)" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition shadow-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Kirish
+                </button>
+            </form>
+            <p class="text-center mt-6 text-gray-600">
+                <a href="index.html" class="text-qdtu-blue hover:underline font-semibold"><i class="fas fa-home mr-1"></i>Asosiy saytga qaytish</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminPanel" class="hidden">
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="w-64 sidebar-gradient text-white overflow-y-auto shadow-2xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 fixed md:relative z-40 h-full">
+                <div class="p-6 border-b border-blue-800">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fas fa-university text-qdtu-blue text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold">QDTU Admin</h2>
+                                <p class="text-xs text-blue-200">So'rovnoma Tizimi</p>
+                            </div>
+                        </div>
+                        <button class="md:hidden text-white" onclick="toggleSidebar()">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <p class="text-sm text-blue-200 mt-3">Log in: <span id="adminUsername" class="font-semibold text-white"></span></p>
+                </div>
+                
+                <nav class="mt-4 px-2">
+                    <a href="#" onclick="showSection('dashboard')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-dashboard">
+                        <i class="fas fa-chart-bar w-6"></i>📊 Dashboard
+                    </a>
+                    <a href="#" onclick="showSection('surveys')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-surveys">
+                        <i class="fas fa-clipboard-list w-6"></i>📝 So'rovnomalar
+                    </a>
+                    <a href="#" onclick="showSection('createSurvey')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-createSurvey">
+                        <i class="fas fa-plus-circle w-6"></i>➕ Yangi so'rovnoma
+                    </a>
+                    <a href="#" onclick="showSection('responses')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-responses">
+                        <i class="fas fa-download w-6"></i>📥 Javoblar
+                    </a>
+                    <a href="#" onclick="showSection('statistics')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-statistics">
+                        <i class="fas fa-chart-pie w-6"></i>📈 Statistika
+                    </a>
+                    <a href="#" onclick="showSection('export')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-export">
+                        <i class="fas fa-file-excel w-6"></i>📄 Excel export
+                    </a>
+                    <a href="#" onclick="showSection('media')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-media">
+                        <i class="fas fa-images w-6"></i>🖼 Media fayllar
+                    </a>
+                    <a href="#" onclick="showSection('settings')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-settings">
+                        <i class="fas fa-cog w-6"></i>⚙️ Sozlamalar
+                    </a>
+                    <a href="#" onclick="showSection('auditLogs')" class="block py-3 px-4 rounded-lg hover:bg-blue-800 transition border-l-4 border-transparent hover:border-qdtu-gold" id="nav-auditLogs">
+                        <i class="fas fa-history w-6"></i>📝 Audit logs
+                    </a>
+                    
+                    <div class="mt-6 pt-4 border-t border-blue-800">
+                        <a href="index.html" class="block py-3 px-4 rounded-lg hover:bg-green-600 transition border-l-4 border-transparent hover:border-green-400">
+                            <i class="fas fa-home w-6"></i>🏠 Asosiy sayt
+                        </a>
+                        <a href="#" onclick="logout()" class="block py-3 px-4 rounded-lg hover:bg-red-600 transition border-l-4 border-transparent hover:border-red-400">
+                            <i class="fas fa-sign-out-alt w-6"></i>🚪 Chiqish
+                        </a>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="flex-1 flex flex-col h-screen overflow-hidden">
+                <!-- Top Bar -->
+                <header class="bg-white shadow-lg p-4 md:p-6 flex-shrink-0">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <button class="md:hidden text-2xl text-qdtu-blue" onclick="toggleSidebar()">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                            <div>
+                                <h1 id="pageTitle" class="text-2xl md:text-3xl font-bold text-gray-800">Dashboard</h1>
+                                <p class="text-sm md:text-base text-gray-500 mt-1" id="currentDate"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 md:gap-4">
+                            <div class="text-right hidden sm:block">
+                                <p class="font-semibold text-gray-800 text-sm md:text-base" id="headerAdminName">Admin</p>
+                                <p class="text-xs text-gray-500">Administrator</p>
+                            </div>
+                            <div class="w-10 h-10 md:w-14 md:h-14 gradient-bg rounded-full flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg">
+                                A
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Content Sections -->
+                <main class="p-6 overflow-y-auto overflow-x-hidden">
+                    <!-- Dashboard Section -->
+                    <div id="section-dashboard" class="section-content">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-2xl soft-shadow card-hover border-l-4 border-qdtu-blue">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-600 text-sm font-semibold">Jami so'rovnomalar</p>
+                                        <p class="text-4xl font-bold text-gray-800 mt-2" id="totalSurveys">0</p>
+                                    </div>
+                                    <div class="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-clipboard-list text-2xl text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-2xl soft-shadow card-hover border-l-4 border-green-500">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-600 text-sm font-semibold">Aktiv so'rovnomalar</p>
+                                        <p class="text-4xl font-bold text-gray-800 mt-2" id="activeSurveys">0</p>
+                                    </div>
+                                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-check-circle text-2xl text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-2xl soft-shadow card-hover border-l-4 border-qdtu-gold">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-600 text-sm font-semibold">Jami javoblar</p>
+                                        <p class="text-4xl font-bold text-gray-800 mt-2" id="totalResponses">0</p>
+                                    </div>
+                                    <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-comments text-2xl text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-2xl soft-shadow card-hover border-l-4 border-purple-500">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-600 text-sm font-semibold">Bugungi javoblar</p>
+                                        <p class="text-4xl font-bold text-gray-800 mt-2" id="todayResponses">0</p>
+                                    </div>
+                                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-calendar-day text-2xl text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="bg-white p-6 rounded-2xl soft-shadow">
+                                <h3 class="text-xl font-bold mb-6 flex items-center">
+                                    <span class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-chart-bar text-white"></i>
+                                    </span>
+                                    So'rovnomalar bo'yicha statistik
+                                </h3>
+                                <div id="surveyStats" class="space-y-4"></div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-2xl soft-shadow">
+                                <h3 class="text-xl font-bold mb-6 flex items-center">
+                                    <span class="w-10 h-10 bg-gradient-to-br from-qdtu-gold to-yellow-500 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-history text-white"></i>
+                                    </span>
+                                    Oxirgi faoliyatlar
+                                </h3>
+                                <div id="recentActivity" class="space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Surveys Section -->
+                    <div id="section-surveys" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">Barcha so'rovnomalar</h3>
+                                <button onclick="showSection('createSurvey')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                    <i class="fas fa-plus mr-2"></i>Yangi so'rovnoma
+                                </button>
+                            </div>
+                            <div id="adminSurveyList" class="space-y-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- Create Survey Section -->
+                    <div id="section-createSurvey" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow max-w-4xl mx-auto">
+                            <h3 class="text-xl font-bold mb-4">Yangi So'rovnoma Yaratish</h3>
+                            <form id="createSurveyForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Sarlavha</label>
+                                    <input type="text" id="surveyTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Tavsif (ixtiyoriy)</label>
+                                    <textarea id="surveyDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Rasm (ixtiyoriy)</label>
+                                    <input type="file" id="surveyImage" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                </div>
+                                
+                                <div class="border-t pt-4">
+                                    <h4 class="font-semibold mb-3">Savollar</h4>
+                                    <div id="questionsContainer" class="space-y-4"></div>
+                                    <button type="button" onclick="addQuestion()" class="mt-3 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                                        <i class="fas fa-plus mr-2"></i>Savol Qo'shish
+                                    </button>
+                                </div>
+
+                                <div class="flex gap-3 pt-4 border-t">
+                                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                                        <i class="fas fa-save mr-2"></i>Yaratish
+                                    </button>
+                                    <button type="button" onclick="showSection('surveys')" class="flex-1 bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition">
+                                        <i class="fas fa-times mr-2"></i>Bekor qilish
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Responses Section -->
+                    <div id="section-responses" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">📥 Barcha Javoblar</h3>
+                                <div class="flex gap-2">
+                                    <select id="filterSurvey" onchange="loadResponses()" class="px-3 py-2 border border-gray-300 rounded-lg">
+                                        <option value="">Barcha so'rovnomalar</option>
+                                    </select>
+                                    <button onclick="exportResponsesCSV()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                                        <i class="fas fa-download mr-2"></i>CSV Yuklab Olish
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="border p-3 text-left">№</th>
+                                            <th class="border p-3 text-left">So'rovnoma</th>
+                                            <th class="border p-3 text-left">Sana</th>
+                                            <th class="border p-3 text-left">Savollar</th>
+                                            <th class="border p-3 text-left">Amallar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="responsesTable">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="noResponses" class="text-center py-8 text-gray-600 hidden">
+                                Hozircha javoblar yo'q
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics Section -->
+                    <div id="section-statistics" class="section-content hidden">
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-xl font-bold mb-4">📊 Umumiy Statistika</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-blue-100 text-sm">Jami so'rovnomalar</p>
+                                                <p class="text-3xl font-bold" id="statTotalSurveys">0</p>
+                                            </div>
+                                            <i class="fas fa-clipboard-list text-4xl opacity-50"></i>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-green-100 text-sm">Aktiv so'rovnomalar</p>
+                                                <p class="text-3xl font-bold" id="statActiveSurveys">0</p>
+                                            </div>
+                                            <i class="fas fa-check-circle text-4xl opacity-50"></i>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="text-purple-100 text-sm">Jami javoblar</p>
+                                                <p class="text-3xl font-bold" id="statTotalResponses">0</p>
+                                            </div>
+                                            <i class="fas fa-comments text-4xl opacity-50"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-xl font-bold mb-4">📈 So'rovnomalar bo'yicha taqqoslash</h3>
+                                <div id="surveyComparison" class="space-y-4">
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-xl font-bold mb-4">🎯 Eng faol so'rovnomalar</h3>
+                                <div id="topSurveys" class="space-y-3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Export Section -->
+                    <div id="section-export" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow max-w-4xl mx-auto">
+                            <h3 class="text-xl font-bold mb-4">📄 Ma'lumotlarni Eksport Qilish</h3>
+                            <div class="space-y-6">
+                                <div class="border p-6 rounded-lg">
+                                    <h4 class="font-semibold mb-4">Excel/CSV Formatda Yuklab Olish</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-gray-700 mb-2">Eksport turi:</label>
+                                            <select id="exportType" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                                <option value="all">Barcha so'rovnomalar</option>
+                                                <option value="single">Bir so'rovnoma</option>
+                                            </select>
+                                        </div>
+                                        <div id="singleSurveySelect" class="hidden">
+                                            <label class="block text-gray-700 mb-2">So'rovnoma tanlang:</label>
+                                            <select id="exportSurveyId" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2">Format:</label>
+                                            <div class="flex gap-4">
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="exportFormat" value="csv" checked class="mr-2">
+                                                    CSV (Excel uchun)
+                                                </label>
+                                                <label class="flex items-center">
+                                                    <input type="radio" name="exportFormat" value="json" class="mr-2">
+                                                    JSON
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <button onclick="exportData()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+                                            <i class="fas fa-download mr-2"></i>Yuklab Olish
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="border p-6 rounded-lg">
+                                    <h4 class="font-semibold mb-4">Tez Eksport</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <button onclick="quickExport('all_surveys')" class="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+                                            <i class="fas fa-file-excel mr-2"></i>Barcha so'rovnomalar
+                                        </button>
+                                        <button onclick="quickExport('all_responses')" class="bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+                                            <i class="fas fa-file-csv mr-2"></i>Barcha javoblar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Media Section -->
+                    <div id="section-media" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">🖼 Media Fayllar</h3>
+                                <label class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition cursor-pointer">
+                                    <i class="fas fa-upload mr-2"></i>Rasm Yuklash
+                                    <input type="file" accept="image/*" onchange="uploadImage(event)" class="hidden">
+                                </label>
+                            </div>
+                            <div id="mediaGallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            </div>
+                            <div id="noMedia" class="text-center py-8 text-gray-600 hidden">
+                                <i class="fas fa-images text-4xl mb-2"></i>
+                                <p>Hozircha rasm yo'q</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Section -->
+                    <div id="section-settings" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow max-w-4xl mx-auto">
+                            <h3 class="text-xl font-bold mb-6">⚙️ Sozlamalar</h3>
+                            <div class="space-y-8">
+                                <!-- Contact Information -->
+                                <div class="border p-6 rounded-xl bg-gradient-to-r from-blue-50 to-white">
+                                    <h4 class="font-bold text-lg mb-4 flex items-center">
+                                        <i class="fas fa-address-book text-qdtu-blue mr-2"></i>
+                                        Aloqa Ma'lumotlari (Asosiy Sahifa)
+                                    </h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Telefon raqam 1</label>
+                                            <input type="text" id="contactPhone1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue" placeholder="+998 36 224-35-35">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Telefon raqam 2</label>
+                                            <input type="text" id="contactPhone2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue" placeholder="+998 90 123-45-67">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Email</label>
+                                            <input type="email" id="contactEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue" placeholder="info@qdtu.uz">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Manzil</label>
+                                            <input type="text" id="contactAddress" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue" placeholder="Qarshi shahri, Katta ko'cha 8">
+                                        </div>
+                                    </div>
+                                    <button onclick="saveContactInfo()" class="mt-4 bg-qdtu-blue text-white px-6 py-2 rounded-lg hover:bg-qdtu-dark transition font-semibold">
+                                        <i class="fas fa-save mr-2"></i>Saqlash
+                                    </button>
+                                </div>
+                                
+                                <!-- Social Media Links -->
+                                <div class="border p-6 rounded-xl bg-gradient-to-r from-pink-50 to-white">
+                                    <h4 class="font-bold text-lg mb-4 flex items-center">
+                                        <i class="fas fa-share-alt text-pink-600 mr-2"></i>
+                                        Ijtimoiy Tarmoqlar (Asosiy Sahifa)
+                                    </h4>
+                                    <div class="space-y-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-gray-700 mb-2 font-semibold">
+                                                    <i class="fab fa-telegram text-blue-500 mr-2"></i>Telegram
+                                                </label>
+                                                <input type="url" id="socialTelegram" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="https://t.me/qdtu_official">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 mb-2 font-semibold">
+                                                    <i class="fab fa-instagram text-pink-600 mr-2"></i>Instagram
+                                                </label>
+                                                <input type="url" id="socialInstagram" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="https://instagram.com/qdtu_official">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 mb-2 font-semibold">
+                                                    <i class="fab fa-youtube text-red-600 mr-2"></i>YouTube
+                                                </label>
+                                                <input type="url" id="socialYoutube" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="https://youtube.com/@qdtu_official">
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-700 mb-2 font-semibold">
+                                                    <i class="fab fa-facebook text-blue-600 mr-2"></i>Facebook
+                                                </label>
+                                                <input type="url" id="socialFacebook" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="https://facebook.com/qdtu_official">
+                                            </div>
+                                        </div>
+                                        <button onclick="saveSocialLinks()" class="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition font-semibold">
+                                            <i class="fas fa-save mr-2"></i>Ijtimoiy Tarmoqlarni Saqlash
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Admin Profile -->
+                                <div class="border p-6 rounded-xl bg-gradient-to-r from-purple-50 to-white">
+                                    <h4 class="font-bold text-lg mb-4 flex items-center">
+                                        <i class="fas fa-user-shield text-purple-600 mr-2"></i>
+                                        Admin Profili
+                                    </h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Login</label>
+                                            <input type="text" id="settingsUsername" value="admin" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Joriy parol</label>
+                                            <div class="relative">
+                                                <input type="password" id="currentPassword" placeholder="Joriy parol" class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue">
+                                                <button type="button" onclick="togglePassword('currentPassword', this)" class="absolute right-3 top-2 text-gray-500 hover:text-gray-700">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Yangi parol</label>
+                                            <div class="relative">
+                                                <input type="password" id="newPassword" placeholder="Yangi parol" class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue">
+                                                <button type="button" onclick="togglePassword('newPassword', this)" class="absolute right-3 top-2 text-gray-500 hover:text-gray-700">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-2 font-semibold">Yangi parolni tasdiqlang</label>
+                                            <div class="relative">
+                                                <input type="password" id="confirmPassword" placeholder="Parolni qayta kiriting" class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue">
+                                                <button type="button" onclick="togglePassword('confirmPassword', this)" class="absolute right-3 top-2 text-gray-500 hover:text-gray-700">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button onclick="changePassword()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
+                                            <i class="fas fa-key mr-2"></i>Parolni O'zgartirish
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- System Info -->
+                                <div class="border p-6 rounded-xl bg-gradient-to-r from-green-50 to-white">
+                                    <h4 class="font-bold text-lg mb-4 flex items-center">
+                                        <i class="fas fa-info-circle text-green-600 mr-2"></i>
+                                        Tizim Ma'lumotlari
+                                    </h4>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                            <span class="text-gray-600">Server port:</span>
+                                            <span class="font-semibold text-gray-800">7000</span>
+                                        </div>
+                                        <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                            <span class="text-gray-600">MongoDB holati:</span>
+                                            <span class="font-semibold text-green-600"><i class="fas fa-check-circle mr-1"></i>Ulangan</span>
+                                        </div>
+                                        <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                            <span class="text-gray-600">So'rovnomalar soni:</span>
+                                            <span class="font-semibold text-gray-800" id="settingsSurveyCount">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                                            <span class="text-gray-600">Admin foydalanuvchilar:</span>
+                                            <span class="font-semibold text-gray-800">1</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Database Clear Section -->
+                                <div class="border-2 border-red-200 p-6 rounded-xl bg-gradient-to-r from-red-50 to-white">
+                                    <h4 class="font-bold text-lg mb-4 flex items-center text-red-700">
+                                        <i class="fas fa-database text-red-600 mr-2"></i>
+                                        Bazani Tozalash
+                                    </h4>
+                                    <p class="text-gray-700 mb-4">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                                        <strong>Ogohlantirish:</strong> Bu amaliyot bazadagi barcha so'rovnomalar va javoblarni butunlay o'chiradi. 
+                                        Bu amaliyotni bekor qilib bo'lmaydi!
+                                    </p>
+                                    <button onclick="clearDatabase()" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-semibold flex items-center gap-2">
+                                        <i class="fas fa-trash-alt"></i>
+                                        Bazani Tozalash
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Audit Logs Section -->
+                    <div id="section-auditLogs" class="section-content hidden">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">📝 Audit Loglar</h3>
+                                <button onclick="clearAuditLogs()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                                    <i class="fas fa-trash mr-2"></i>Tozalash
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="border p-3 text-left">Vaqt</th>
+                                            <th class="border p-3 text-left">Foydalanuvchi</th>
+                                            <th class="border p-3 text-left">Harakat</th>
+                                            <th class="border p-3 text-left">Tafsilot</th>
+                                            <th class="border p-3 text-left">IP Manzil</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="auditLogsTable">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="noLogs" class="text-center py-8 text-gray-600 hidden">
+                                Hozircha loglar yo'q
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"></div>
+
+    <script>
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                overlay.classList.add('hidden');
+            } else {
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        // GLOBAL FUNCTIONS - Must be first!
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        }
+            
+        let questions = [];
+        let currentSurveyId = null;
+        let surveysData = [];
+        let auditLogs = JSON.parse(sessionStorage.getItem('auditLogs') || '[]');
+
+        // Token helper functions
+        function getToken() {
+            return sessionStorage.getItem('adminToken');
+        }
+
+        function setToken(token) {
+            sessionStorage.setItem('adminToken', token);
+        }
+
+        function clearToken() {
+            sessionStorage.removeItem('adminToken');
+        }
+
+        // Get auth headers with token
+        // JSON requestlar uchun Content-Type qo'shiladi,
+        // FormData uchun esa browser o'zi multipart boundary bilan yuboradi.
+        function getAuthHeaders(contentType = 'application/json') {
+            const token = getToken();
+            const headers = {};
+
+            if (contentType) {
+                headers['Content-Type'] = contentType;
+            }
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            return headers;
+        }
+
+        // Test route - serverni tekshirish
+        async function testServer() {
+            try {
+                console.log('Testing server...');
+                const token = getToken();
+                console.log('Current token:', token ? 'EXISTS' : 'MISSING');
+                
+                const response = await fetch('/api/admin/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify({ test: 'data' })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Test response:', data);
+                alert('✅ Server test: ' + data.message);
+            } catch (error) {
+                console.error('Test error:', error);
+                alert('❌ Server test xatosi: ' + error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAuditLog('system', 'Tizim ishga tushdi', 'System started');
+        });
+
+        // Check if logged in
+        const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+        if (isLoggedIn === 'true') {
+            showAdminPanel();
+        }
+
+        // Login form submit
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    sessionStorage.setItem('adminUsername', data.admin.username);
+                    setToken(data.token); // Token saqlash
+                    showAdminPanel();
+                } else {
+                    alert(data.error || 'Login xatosi');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Server bilan bog\'lanishda xato!');
+            }
+        });
+
+        function showAdminPanel() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('adminUsername').textContent = sessionStorage.getItem('adminUsername') || 'Admin';
+            
+            // Set current date
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('uz-UZ', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            showSection('dashboard');
+            loadSurveys();
+            loadDashboard();
+            loadAuditLogs();
+            loadMedia();
+            loadAuditLogsTable();
+        }
+            
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('adminUsername');
+            clearToken(); // Tokenni ham o'chirish
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Remove active state from all nav items
+            document.querySelectorAll('nav a').forEach(el => {
+                el.classList.remove('border-blue-500');
+            });
+            
+            // Show selected section
+            const section = document.getElementById('section-' + sectionName);
+            if (section) {
+                section.classList.remove('hidden');
+            }
+            
+            // Add active state to nav item
+            const navItem = document.getElementById('nav-' + sectionName);
+            if (navItem) {
+                navItem.classList.add('border-blue-500');
+            }
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'surveys': 'So\'rovnomalar',
+                'createSurvey': 'Yangi So\'rovnoma',
+                'responses': 'Javoblar',
+                'statistics': 'Statistika',
+                'export': 'Excel Export',
+                'media': 'Media Fayllar',
+                'settings': 'Sozlamalar',
+                'auditLogs': 'Audit Logs'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionName] || 'Admin Panel';
+            
+            // Load data for specific sections
+            if (sectionName === 'surveys') {
+                loadSurveys();
+            } else if (sectionName === 'dashboard') {
+                loadDashboard();
+            } else if (sectionName === 'responses') {
+                loadResponses();
+            } else if (sectionName === 'statistics') {
+                loadStatistics();
+            } else if (sectionName === 'export') {
+                loadExportOptions();
+            } else if (sectionName === 'media') {
+                loadMedia();
+            } else if (sectionName === 'settings') {
+                loadSettings();
+                loadContactInfo();
+                loadSocialLinks();
+            } else if (sectionName === 'auditLogs') {
+                loadAuditLogsTable();
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/admin/surveys', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const surveys = await response.json();
+                surveysData = surveys;
+                
+                // Calculate statistics
+                const totalSurveys = surveys.length;
+                const activeSurveys = surveys.filter(s => s.isActive).length;
+                
+                // Calculate total responses
+                let totalResponses = 0;
+                surveys.forEach(survey => {
+                    survey.questions.forEach(question => {
+                        question.options.forEach(option => {
+                            totalResponses += option.votes;
+                        });
+                    });
+                });
+                
+                // Today's responses (simplified)
+                const todayResponses = Math.floor(totalResponses * 0.3); // Demo calculation
+                
+                // Update dashboard stats
+                document.getElementById('totalSurveys').textContent = totalSurveys;
+                document.getElementById('activeSurveys').textContent = activeSurveys;
+                document.getElementById('totalResponses').textContent = totalResponses;
+                document.getElementById('todayResponses').textContent = todayResponses;
+                
+                // Survey stats
+                const surveyStatsContainer = document.getElementById('surveyStats');
+                if (surveys.length > 0) {
+                    surveyStatsContainer.innerHTML = surveys.slice(0, 5).map(survey => {
+                        let surveyResponses = 0;
+                        survey.questions.forEach(q => {
+                            q.options.forEach(o => { surveyResponses += o.votes; });
+                        });
+                        return `
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <div>
+                                    <p class="font-semibold">${survey.title}</p>
+                                    <p class="text-sm text-gray-600">${surveyResponses} javob</p>
+                                </div>
+                                <span class="${survey.isActive ? 'text-green-600' : 'text-red-600'}">
+                                    ${survey.isActive ? '✅' : '❌'}
+                                </span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    surveyStatsContainer.innerHTML = '<p class="text-gray-600 text-center py-4">So\'rovnomalar yo\'q</p>';
+                }
+                
+                // Recent activity
+                const recentActivity = document.getElementById('recentActivity');
+                if (surveys.length > 0) {
+                    recentActivity.innerHTML = surveys.slice(0, 5).map(survey => {
+                        const date = new Date(survey.createdAt);
+                        return `
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded">
+                                <div class="bg-blue-100 p-2 rounded-full">
+                                    <i class="fas fa-clipboard-list text-blue-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-sm">${survey.title}</p>
+                                    <p class="text-xs text-gray-600">${date.toLocaleDateString('uz-UZ')}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    recentActivity.innerHTML = '<p class="text-gray-600 text-center py-4">Faoliyatlar yo\'q</p>';
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+            
+        async function loadSurveys() {
+            try {
+                const response = await fetch('/api/admin/surveys', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const surveys = await response.json();
+                surveysData = surveys;
+                
+                const surveyList = document.getElementById('adminSurveyList');
+                
+                if (surveys.length === 0) {
+                    surveyList.innerHTML = '<p class="text-gray-600 text-center py-8">Hozircha so\'rovnomalar yo\'q</p>';
+                    return;
+                }
+                
+                surveyList.innerHTML = surveys.map(survey => `
+                    <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition">
+                        <div class="flex gap-4">
+                            ${survey.image ? `<img src="${survey.image}" alt="${survey.title}" class="w-24 h-24 object-cover rounded">` : '<div class="w-24 h-24 bg-gray-200 rounded flex items-center justify-center"><i class="fas fa-image text-gray-400 text-2xl"></i></div>'}
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800">${survey.title}</h3>
+                                <p class="text-sm text-gray-600">${survey.questions.length} ta savol</p>
+                                <p class="text-xs text-gray-500 mt-1">${survey.isActive ? '<span class="text-green-600">✅ Aktiv</span>' : '<span class="text-red-600">❌ Yopiq</span>'}</p>
+                                <div class="flex gap-2 mt-3">
+                                    <button onclick="showResults('${survey._id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition">
+                                        <i class="fas fa-chart-bar mr-1"></i>Natijalar
+                                    </button>
+                                    <button onclick="toggleSurvey('${survey._id}', ${!survey.isActive})" class="${survey.isActive ? 'bg-yellow-500' : 'bg-green-500'} text-white px-3 py-1 rounded text-sm hover:opacity-90 transition">
+                                        <i class="fas fa-toggle-${survey.isActive ? 'off' : 'on'} mr-1"></i>${survey.isActive ? 'Yopish' : 'Ochiq'}
+                                    </button>
+                                    <button onclick="deleteSurvey('${survey._id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition">
+                                        <i class="fas fa-trash mr-1"></i>O'chirish
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading surveys:', error);
+            }
+        }
+
+        function addQuestion() {
+            const questionId = Date.now();
+            questions.push({
+                id: questionId,
+                text: '',
+                type: 'radio',
+                options: ['', '']
+            });
+            
+            renderQuestions();
+        }
+
+        function removeQuestion(index) {
+            questions.splice(index, 1);
+            renderQuestions();
+        }
+
+        function updateQuestionText(index, text) {
+            questions[index].text = text;
+        }
+
+        function updateQuestionType(index, type) {
+            questions[index].type = type;
+        }
+
+        function addOption(questionIndex) {
+            questions[questionIndex].options.push('');
+            renderQuestions();
+        }
+
+        function removeOption(questionIndex, optionIndex) {
+            questions[questionIndex].options.splice(optionIndex, 1);
+            renderQuestions();
+        }
+
+        function updateOption(questionIndex, optionIndex, value) {
+            questions[questionIndex].options[optionIndex] = value;
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = questions.map((q, qIndex) => `
+                <div class="bg-gray-50 p-4 rounded-lg" data-question-id="${q.id}">
+                    <div class="flex justify-between items-start mb-3">
+                        <h5 class="font-semibold">Savol ${qIndex + 1}</h5>
+                        <button type="button" onclick="removeQuestion(${qIndex})" class="text-red-500 hover:text-red-700">&times;</button>
+                    </div>
+                    <input type="text" placeholder="Savol matni" value="${q.text}" 
+                        onchange="updateQuestionText(${qIndex}, this.value)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded mb-3">
+                    <select onchange="updateQuestionType(${qIndex}, this.value)" class="w-full px-3 py-2 border border-gray-300 rounded mb-3">
+                        <option value="radio" ${q.type === 'radio' ? 'selected' : ''}>Bitta tanlov (Radio)</option>
+                        <option value="checkbox" ${q.type === 'checkbox' ? 'selected' : ''}>Ko'p tanlov (Checkbox)</option>
+                        <option value="text" ${q.type === 'text' ? 'selected' : ''}>Matnli javob</option>
+                    </select>
+                    ${q.type !== 'text' ? `
+                        <div class="space-y-2">
+                            <p class="text-sm font-semibold text-gray-600">Variantlar:</p>
+                            ${q.options.map((opt, oIndex) => `
+                                <div class="flex gap-2">
+                                    <input type="text" placeholder="Variant ${oIndex + 1}" value="${opt}"
+                                        onchange="updateOption(${qIndex}, ${oIndex}, this.value)"
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded">
+                                    <button type="button" onclick="removeOption(${qIndex}, ${oIndex})" class="text-red-500 hover:text-red-700">&times;</button>
+                                </div>
+                            `).join('')}
+                            <button type="button" onclick="addOption(${qIndex})" class="text-blue-600 hover:text-blue-800 text-sm">
+                                + Variant qo'shish
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('createSurveyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Validatsiya
+            const title = document.getElementById('surveyTitle').value.trim();
+            if (!title) {
+                alert('⚠️ Sarlavha kiriting!');
+                return;
+            }
+            
+            if (questions.length === 0) {
+                alert('⚠️ Kamida bitta savol qo\'shing!');
+                return;
+            }
+            
+            // Har bir savolni tekshirish
+            for (let i = 0; i < questions.length; i++) {
+                const q = questions[i];
+                if (!q.text.trim()) {
+                    alert(`⚠️ ${i + 1}-savol matnini kiriting!`);
+                    return;
+                }
+                
+                if (q.type !== 'text' && q.options.filter(o => o.trim()).length === 0) {
+                    alert(`⚠️ ${i + 1}-savol uchun variantlar qo\'shing!`);
+                    return;
+                }
+            }
+            
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', document.getElementById('surveyDescription').value.trim());
+            
+            const imageFile = document.getElementById('surveyImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            
+            const surveyQuestions = questions.map(q => ({
+                questionText: q.text.trim(),
+                questionType: q.type,
+                options: q.options.filter(o => o.trim()).map(opt => ({ optionText: opt.trim(), votes: 0 }))
+            }));
+            
+            formData.append('questions', JSON.stringify(surveyQuestions));
+            
+            // Yuklanmoqda ko'rsatish
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Yaratilmoqda...';
+            
+            try {
+                const url = '/api/admin/surveys';
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: getAuthHeaders(null),
+                    body: formData
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text.substring(0, 500));
+                    alert('❌ Server HTML qaytardi (JSON o\'rniga). Serverni tekshiring!');
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    alert('✅ So\'rovnoma muvaffaqiyatli yaratildi!');
+                    document.getElementById('createSurveyForm').reset();
+                    questions = [];
+                    renderQuestions();
+                    showSection('surveys');
+                    loadAuditLog('admin', 'Yangi so\'rovnoma', title);
+                } else {
+                    alert('❌ ' + (data.error || 'Xato yuz berdi'));
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                alert('❌ Server bilan bog\'lanishda xato: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        async function toggleSurvey(surveyId, isActive) {
+            try {
+                const response = await fetch(`/api/admin/surveys/${surveyId}/toggle`, {
+                    method: 'PATCH',
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                if (response.ok) {
+                    loadSurveys();
+                    loadDashboard();
+                }
+            } catch (error) {
+                alert('Xato yuz berdi');
+            }
+        }
+            
+        async function deleteSurvey(surveyId) {
+            if (!confirm('Haqiqatan ham o\'chirmoqchimisiz?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/surveys/${surveyId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                if (response.ok) {
+                    loadSurveys();
+                    loadDashboard();
+                }
+            } catch (error) {
+                alert('Xato yuz berdi');
+            }
+        }
+
+        async function showResults(surveyId) {
+            try {
+                const response = await fetch(`/api/admin/surveys/${surveyId}/results`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const survey = await response.json();
+                currentSurveyId = surveyId;
+                
+                // Create and show modal
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+                modal.id = 'resultsModal';
+                
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-2xl font-bold text-gray-800">${survey.title}</h3>
+                                <button onclick="document.getElementById('resultsModal').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                            </div>
+                            
+                            ${survey.image ? `<img src="${survey.image}" alt="${survey.title}" class="w-full h-64 object-cover rounded-lg mb-4">` : ''}
+                            
+                            <div class="space-y-6">
+                                ${survey.questions.map((question, index) => {
+                                    const totalVotes = question.options.reduce((sum, opt) => sum + opt.votes, 0);
+                                    
+                                    return `
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <h4 class="font-semibold text-gray-800 mb-3">${index + 1}. ${question.questionText}</h4>
+                                            <p class="text-sm text-gray-600 mb-3">Jami javoblar: ${totalVotes}</p>
+                                            <div class="space-y-2">
+                                                ${question.options.map(option => {
+                                                    const percentage = totalVotes > 0 ? ((option.votes / totalVotes) * 100).toFixed(1) : 0;
+                                                    return `
+                                                        <div>
+                                                            <div class="flex justify-between text-sm mb-1">
+                                                                <span>${option.optionText}</span>
+                                                                <span>${option.votes} ta (${percentage}%)</span>
+                                                            </div>
+                                                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                                                <div class="bg-blue-600 h-3 rounded-full" style="width: ${percentage}%"></div>
+                                                            </div>
+                                                        </div>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            } catch (error) {
+                alert('Xato yuz berdi');
+            }
+        }
+
+        // Responses Section
+        async function loadResponses() {
+            try {
+                const response = await fetch('/api/admin/surveys', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const surveys = await response.json();
+                
+                // Populate filter dropdown
+                const filterSelect = document.getElementById('filterSurvey');
+                filterSelect.innerHTML = '<option value="">Barcha so\'rovnomalar</option>';
+                surveys.forEach(survey => {
+                    filterSelect.innerHTML += `<option value="${survey._id}">${survey.title}</option>`;
+                });
+                
+                surveysData = surveys;
+                const tbody = document.getElementById('responsesTable');
+                const filterValue = document.getElementById('filterSurvey').value;
+                
+                // Collect all responses
+                let responses = [];
+                surveys.forEach(survey => {
+                    if (filterValue && survey._id !== filterValue) return;
+                    
+                    survey.questions.forEach((question, qIndex) => {
+                        question.options.forEach((option, oIndex) => {
+                            if (option.votes > 0) {
+                                responses.push({
+                                    surveyTitle: survey.title,
+                                    questionText: question.questionText,
+                                    optionText: option.optionText,
+                                    votes: option.votes,
+                                    questionType: question.questionType
+                                });
+                            }
+                        });
+                    });
+                });
+                
+                if (responses.length === 0) {
+                    document.getElementById('noResponses').classList.remove('hidden');
+                    tbody.innerHTML = '';
+                    return;
+                }
+                
+                document.getElementById('noResponses').classList.add('hidden');
+                tbody.innerHTML = responses.map((resp, index) => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="border p-3">${index + 1}</td>
+                        <td class="border p-3">${resp.surveyTitle}</td>
+                        <td class="border p-3">${new Date().toLocaleDateString('uz-UZ')}</td>
+                        <td class="border p-3">
+                            <p class="font-semibold">${resp.questionText}</p>
+                            <p class="text-sm text-gray-600">${resp.optionText} - ${resp.votes} ovoz</p>
+                        </td>
+                        <td class="border p-3">
+                            <button class="text-blue-600 hover:text-blue-800 mr-2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading responses:', error);
+            }
+        }
+
+        function exportResponsesCSV() {
+            let csv = 'So\'rovnoma,Savol,Variant,Ovozlar,Sana\n';
+            surveysData.forEach(survey => {
+                survey.questions.forEach(question => {
+                    question.options.forEach(option => {
+                        if (option.votes > 0) {
+                            csv += `"${survey.title}","${question.questionText}","${option.optionText}",${option.votes},${new Date().toLocaleDateString('uz-UZ')}\n`;
+                        }
+                    });
+                });
+            });
+            
+            downloadFile(csv, 'javoblar.csv', 'text/csv');
+            loadAuditLog('admin', 'CSV eksport', 'Javoblar CSV formatda eksport qilindi');
+        }
+
+        // Statistics Section
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/admin/surveys', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const surveys = await response.json();
+                surveysData = surveys;
+                
+                // Update stats
+                document.getElementById('statTotalSurveys').textContent = surveys.length;
+                document.getElementById('statActiveSurveys').textContent = surveys.filter(s => s.isActive).length;
+                
+                let totalResponses = 0;
+                surveys.forEach(survey => {
+                    survey.questions.forEach(q => {
+                        q.options.forEach(o => { totalResponses += o.votes; });
+                    });
+                });
+                document.getElementById('statTotalResponses').textContent = totalResponses;
+                
+                // Survey comparison
+                const comparisonContainer = document.getElementById('surveyComparison');
+                comparisonContainer.innerHTML = surveys.map(survey => {
+                    let surveyResponses = 0;
+                    survey.questions.forEach(q => {
+                        q.options.forEach(o => { surveyResponses += o.votes; });
+                    });
+                    const maxResponses = Math.max(...surveys.map(s => 
+                        s.questions.reduce((sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0), 0)
+                    ));
+                    const percentage = maxResponses > 0 ? (surveyResponses / maxResponses * 100) : 0;
+                    
+                    return `
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-semibold">${survey.title}</span>
+                                <span>${surveyResponses} javob</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Top surveys
+                const topSurveysContainer = document.getElementById('topSurveys');
+                const sortedSurveys = [...surveys].sort((a, b) => {
+                    const aResponses = a.questions.reduce((sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0), 0);
+                    const bResponses = b.questions.reduce((sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0), 0);
+                    return bResponses - aResponses;
+                }).slice(0, 5);
+                
+                topSurveysContainer.innerHTML = sortedSurveys.map((survey, index) => {
+                    let surveyResponses = 0;
+                    survey.questions.forEach(q => {
+                        q.options.forEach(o => { surveyResponses += o.votes; });
+                    });
+                    
+                    return `
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-${index < 3 ? 'gold' : 'gray'}-500 rounded-full flex items-center justify-center text-white font-bold">
+                                ${index + 1}
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">${survey.title}</p>
+                                <p class="text-sm text-gray-600">${surveyResponses} javob</p>
+                            </div>
+                            <span class="${survey.isActive ? 'text-green-600' : 'text-red-600'}">
+                                ${survey.isActive ? '✅' : '❌'}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+            
+        // Export Section
+        function loadExportOptions() {
+            const select = document.getElementById('exportSurveyId');
+            select.innerHTML = '';
+            surveysData.forEach(survey => {
+                select.innerHTML += `<option value="${survey._id}">${survey.title}</option>`;
+            });
+            
+            document.getElementById('exportType').addEventListener('change', (e) => {
+                document.getElementById('singleSurveySelect').classList.toggle('hidden', e.target.value !== 'single');
+            });
+        }
+
+        function exportData() {
+            const exportType = document.getElementById('exportType').value;
+            const format = document.querySelector('input[name="exportFormat"]:checked').value;
+            
+            let data = [];
+            if (exportType === 'all') {
+                data = surveysData;
+            } else {
+                const surveyId = document.getElementById('exportSurveyId').value;
+                data = surveysData.filter(s => s._id === surveyId);
+            }
+            
+            if (format === 'json') {
+                downloadFile(JSON.stringify(data, null, 2), 'sorovnomalar.json', 'application/json');
+            } else {
+                let csv = 'Sarlavha,Tavsif,Savollar soni,Holat,Sana\n';
+                data.forEach(survey => {
+                    csv += `"${survey.title}","${survey.description}",${survey.questions.length},${survey.isActive ? 'Aktiv' : 'Yopiq'},${new Date(survey.createdAt).toLocaleDateString('uz-UZ')}\n`;
+                });
+                downloadFile(csv, 'sorovnomalar.csv', 'text/csv');
+            }
+            
+            loadAuditLog('admin', 'Ma\'lumot eksport', `${exportType} ${format.toUpperCase()} formatda eksport qilindi`);
+        }
+
+        function quickExport(type) {
+            if (type === 'all_surveys') {
+                let csv = 'Sarlavha,Tavsif,Savollar soni,Holat,Sana\n';
+                surveysData.forEach(survey => {
+                    csv += `"${survey.title}","${survey.description}",${survey.questions.length},${survey.isActive ? 'Aktiv' : 'Yopiq'},${new Date(survey.createdAt).toLocaleDateString('uz-UZ')}\n`;
+                });
+                downloadFile(csv, 'barcha_sorovnomalar.csv', 'text/csv');
+            } else if (type === 'all_responses') {
+                exportResponsesCSV();
+            }
+            loadAuditLog('admin', 'Tez eksport', `${type} eksport qilindi`);
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Media Section
+        async function loadMedia() {
+            try {
+                const response = await fetch('/api/admin/surveys', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const surveys = await response.json();
+                
+                const gallery = document.getElementById('mediaGallery');
+                const images = [];
+                
+                surveys.forEach(survey => {
+                    if (survey.image) {
+                        images.push({
+                            url: survey.image,
+                            title: survey.title,
+                            surveyId: survey._id
+                        });
+                    }
+                });
+                
+                if (images.length === 0) {
+                    document.getElementById('noMedia').classList.remove('hidden');
+                    gallery.innerHTML = '';
+                    return;
+                }
+                
+                document.getElementById('noMedia').classList.add('hidden');
+                gallery.innerHTML = images.map(img => `
+                    <div class="relative group">
+                        <img src="${img.url}" alt="${img.title}" class="w-full h-48 object-cover rounded-lg">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition rounded-lg flex items-center justify-center">
+                            <a href="${img.url}" target="_blank" class="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg transition">
+                                <i class="fas fa-eye mr-2"></i>Ko'rish
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading media:', error);
+            }
+        }
+            
+        function uploadImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // Upload to a temporary endpoint or show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const gallery = document.getElementById('mediaGallery');
+                const noMedia = document.getElementById('noMedia');
+                noMedia.classList.add('hidden');
+                
+                gallery.innerHTML += `
+                    <div class="relative group">
+                        <img src="${e.target.result}" alt="Uploaded" class="w-full h-48 object-cover rounded-lg">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition rounded-lg flex items-center justify-center">
+                            <a href="${e.target.result}" target="_blank" class="opacity-0 group-hover:opacity-100 bg-white text-gray-800 px-4 py-2 rounded-lg transition">
+                                <i class="fas fa-eye mr-2"></i>Ko'rish
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                loadAuditLog('admin', 'Rasm yuklandi', file.name);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Settings Section
+        function loadSettings() {
+            document.getElementById('settingsSurveyCount').textContent = surveysData.length;
+        }
+
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword) {
+                alert('Joriy parolni kiriting!');
+                return;
+            }
+            
+            if (!newPassword) {
+                alert('Yangi parolni kiriting!');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('Yangi parollar mos kelmadi!');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('Parol kamida 6 ta belgidan iborat bo\'lishi kerak!');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                if (response.status === 401) {
+                    const data = await response.json();
+                    alert('❌ ' + (data.error || 'Joriy parol noto\'g\'ri'));
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert('❌ ' + (data.error || 'Parolni o\'zgartirishda xato'));
+                    return;
+                }
+
+                alert('✅ ' + (data.message || 'Parol muvaffaqiyatli o\'zgartirildi!'));
+
+                // Xavfsizlik: mavjud token/sessiyani yopamiz, qayta login talab qilinadi
+                sessionStorage.removeItem('adminLoggedIn');
+                sessionStorage.removeItem('adminUsername');
+                clearToken();
+
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+
+                loadAuditLog('admin', 'Parol o\'zgartirildi', 'Admin paroli yangilandi');
+                alert('🔒 Parol yangilandi. Iltimos, yangi parol bilan qayta kiring.');
+                logout();
+            } catch (error) {
+                console.error('Change password error:', error);
+                alert('❌ Server bilan bog\'lanishda xato!');
+            }
+        }
+            
+        // Audit Logs Section
+        function loadAuditLog(user, action, details) {
+            const log = {
+                timestamp: new Date().toISOString(),
+                user: user,
+                action: action,
+                details: details,
+                ip: '127.0.0.1'
+            };
+            
+            auditLogs.unshift(log);
+            if (auditLogs.length > 100) {
+                auditLogs = auditLogs.slice(0, 100);
+            }
+            
+            sessionStorage.setItem('auditLogs', JSON.stringify(auditLogs));
+        }
+
+        function loadAuditLogsTable() {
+            const tbody = document.getElementById('auditLogsTable');
+            
+            if (auditLogs.length === 0) {
+                document.getElementById('noLogs').classList.remove('hidden');
+                tbody.innerHTML = '';
+                return;
+            }
+            
+            document.getElementById('noLogs').classList.add('hidden');
+            tbody.innerHTML = auditLogs.map(log => `
+                <tr class="hover:bg-gray-50">
+                    <td class="border p-3">${new Date(log.timestamp).toLocaleString('uz-UZ')}</td>
+                    <td class="border p-3">${log.user}</td>
+                    <td class="border p-3">${log.action}</td>
+                    <td class="border p-3">${log.details}</td>
+                    <td class="border p-3">${log.ip}</td>
+                </tr>
+            `).join('');
+        }
+
+        function loadAuditLogs() {
+            // Load from session storage
+            auditLogs = JSON.parse(sessionStorage.getItem('auditLogs') || '[]');
+        }
+
+        function clearAuditLogs() {
+            if (confirm('Barcha loglarni o\'chirmoqchimisiz?')) {
+                auditLogs = [];
+                sessionStorage.setItem('auditLogs', JSON.stringify([]));
+                loadAuditLogsTable();
+                loadAuditLog('system', 'Loglar tozalandi', 'Audit loglar tozalandi');
+            }
+        }
+            
+        // Database Clear Function
+        async function clearDatabase() {
+            // Double confirmation with warning
+            const confirmed = confirm(
+                '⚠️ JUDA MUHIM OGOHLANTIRISH!\n\n' +
+                'Siz bazani tozalashni xohlaysizmi?\n\n' +
+                'Bu amaliyot quyidagilarni bajaradi:\n' +
+                '• Barcha so\'rovnomalar o\'chiriladi\n' +
+                '• Barcha javoblar va ovozlar yo\'qoladi\n' +
+                '• Bu amaliyotni BEKOR QILIB BO\'LMAYDI!\n\n' +
+                'Davom etishni xohlaysizmi? (Ha/Uchun cancel bosing)'
+            );
+            
+            if (!confirmed) {
+                return;
+            }
+            
+            // Second confirmation
+            const secondConfirm = prompt(
+                'Iltimos, tasdiqlash uchun "TOZALASH" so\'zini kiriting:\n\n' +
+                'Bu jarayonni bekor qilib bo\'lmaydi!'
+            );
+            
+            if (secondConfirm !== 'TOZALASH') {
+                alert('❌ Baza tozalanmadi. Buyruq noto\'g\'ri kiritildi.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/database/clear', {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('✅ ' + data.message);
+                    
+                    // Log the action
+                    loadAuditLog('admin', 'Baza tozalandi', 'Barcha so\'rovnomalar va javoblar o\'chirildi');
+                    
+                    // Reload the panel
+                    surveysData = [];
+                    loadDashboard();
+                    loadSurveys();
+                } else {
+                    const data = await response.json();
+                    alert('❌ Xato: ' + (data.error || 'Baza tozalashda xato yuz berdi'));
+                }
+            } catch (error) {
+                console.error('Database clear error:', error);
+                alert('❌ Server bilan bog\'lanishda xato!');
+            }
+        }
+            
+        // Contact Info Functions
+        function loadContactInfo() {
+            const contactInfo = JSON.parse(localStorage.getItem('contactInfo') || '{}');
+            
+            if (contactInfo.phone1) {
+                document.getElementById('contactPhone1').value = contactInfo.phone1;
+            }
+            if (contactInfo.phone2) {
+                document.getElementById('contactPhone2').value = contactInfo.phone2;
+            }
+            if (contactInfo.email) {
+                document.getElementById('contactEmail').value = contactInfo.email;
+            }
+            if (contactInfo.address) {
+                document.getElementById('contactAddress').value = contactInfo.address;
+            }
+        }
+            
+        function saveContactInfo() {
+            const contactInfo = {
+                phone1: document.getElementById('contactPhone1').value || '+998 36 224-35-35',
+                phone2: document.getElementById('contactPhone2').value || '',
+                email: document.getElementById('contactEmail').value || 'info@qdtu.uz',
+                address: document.getElementById('contactAddress').value || 'Qarshi shahri, Katta kocha 8'
+            };
+            
+            localStorage.setItem('contactInfo', JSON.stringify(contactInfo));
+            alert('✅ Aloqa ma\'lumotlari saqlandi!');
+            loadAuditLog('admin', 'Aloqa ma\'lumotlari', 'Telefon va email yangilandi');
+        }
+
+        function saveSocialLinks() {
+            const socialLinks = {
+                telegram: {
+                    name: 'Telegram',
+                    url: document.getElementById('socialTelegram').value || ''
+                },
+                instagram: {
+                    name: 'Instagram',
+                    url: document.getElementById('socialInstagram').value || ''
+                },
+                youtube: {
+                    name: 'YouTube',
+                    url: document.getElementById('socialYoutube').value || ''
+                },
+                facebook: {
+                    name: 'Facebook',
+                    url: document.getElementById('socialFacebook').value || ''
+                }
+            };
+
+            localStorage.setItem('socialLinks', JSON.stringify(socialLinks));
+            alert('✅ Ijtimoiy tarmoqlar linklari saqlandi!');
+            loadAuditLog('admin', 'Ijtimoiy tarmoqlar', 'Social media linklar yangilandi');
+        }
+
+
+        function loadSocialLinks() {
+            const socialLinks = JSON.parse(localStorage.getItem('socialLinks') || '{}');
+            
+            if (socialLinks.telegram) {
+                document.getElementById('socialTelegram').value = socialLinks.telegram.url || '';
+            }
+            if (socialLinks.instagram) {
+                document.getElementById('socialInstagram').value = socialLinks.instagram.url || '';
+            }
+            if (socialLinks.youtube) {
+                document.getElementById('socialYoutube').value = socialLinks.youtube.url || '';
+            }
+            if (socialLinks.facebook) {
+                document.getElementById('socialFacebook').value = socialLinks.facebook.url || '';
+            }
+        }
+
+
+    </script>
+</body>
+</html>
