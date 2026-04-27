@@ -1019,7 +1019,8 @@
                 id: questionId,
                 text: '',
                 type: 'radio',
-                options: ['', '']
+                options: ['', ''],
+                rows: []
             });
             
             renderQuestions();
@@ -1036,6 +1037,19 @@
 
         function updateQuestionType(index, type) {
             questions[index].type = type;
+            
+            // Matrix turini tanlaganda avtomatik standart holatlar qo'shish
+            if (type === 'matrix') {
+                questions[index].rows = [
+                    'Asabiy',
+                    'Tushkunlik',
+                    'Bezovtalik',
+                    'Motivatsiya yo\'qligi',
+                    'Charchoq'
+                ];
+            }
+            
+            renderQuestions();
         }
 
         function addOption(questionIndex) {
@@ -1050,6 +1064,24 @@
 
         function updateOption(questionIndex, optionIndex, value) {
             questions[questionIndex].options[optionIndex] = value;
+        }
+
+        // Matrix savollar uchun funksiyalar
+        function addMatrixRow(questionIndex) {
+            if (!questions[questionIndex].rows) {
+                questions[questionIndex].rows = [];
+            }
+            questions[questionIndex].rows.push('');
+            renderQuestions();
+        }
+
+        function removeMatrixRow(questionIndex, rowIndex) {
+            questions[questionIndex].rows.splice(rowIndex, 1);
+            renderQuestions();
+        }
+
+        function updateMatrixRow(questionIndex, rowIndex, value) {
+            questions[questionIndex].rows[rowIndex] = value;
         }
 
         function renderQuestions() {
@@ -1067,9 +1099,9 @@
                         <option value="radio" ${q.type === 'radio' ? 'selected' : ''}>Bitta tanlov (Radio)</option>
                         <option value="checkbox" ${q.type === 'checkbox' ? 'selected' : ''}>Ko'p tanlov (Checkbox)</option>
                         <option value="text" ${q.type === 'text' ? 'selected' : ''}>Matnli javob</option>
-                        <option value="likert" ${q.type === 'likert' ? 'selected' : ''}>Likert Scale (Hech qachon-Doimo)</option>
+                        <option value="matrix" ${q.type === 'matrix' ? 'selected' : ''}>Matrix (Bir nechta holatlar)</option>
                     </select>
-                    ${q.type !== 'text' && q.type !== 'likert' ? `
+                    ${q.type !== 'text' && q.type !== 'matrix' ? `
                         <div class="space-y-2">
                             <p class="text-sm font-semibold text-gray-600">Variantlar:</p>
                             ${q.options.map((opt, oIndex) => `
@@ -1085,12 +1117,22 @@
                             </button>
                         </div>
                     ` : ''}
-                    ${q.type === 'likert' ? `
-                        <div class="space-y-2">
-                            <p class="text-sm font-semibold text-gray-600">Likert variantlari (standart):</p>
-                            <div class="text-sm text-gray-500">Hech qachon, Ba'zida, Ko'pincha, Doimo</div>
-                            <div class="bg-blue-50 p-3 rounded text-sm text-blue-700">
-                                Likert scale savollari uchun standart variantlar avtomatik qo'shiladi.
+                    ${q.type === 'matrix' ? `
+                        <div class="space-y-3">
+                            <p class="text-sm font-semibold text-gray-600">Holatlar (qatorlar):</p>
+                            ${q.rows && q.rows.length > 0 ? q.rows.map((row, rIndex) => `
+                                <div class="flex gap-2">
+                                    <input type="text" placeholder="Holat ${rIndex + 1}" value="${row}"
+                                        onchange="updateMatrixRow(${qIndex}, ${rIndex}, this.value)"
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded">
+                                    <button type="button" onclick="removeMatrixRow(${qIndex}, ${rIndex})" class="text-red-500 hover:text-red-700">&times;</button>
+                                </div>
+                            `).join('') : ''}
+                            <button type="button" onclick="addMatrixRow(${qIndex})" class="text-blue-600 hover:text-blue-800 text-sm">
+                                + Holat qo'shish
+                            </button>
+                            <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 mt-3">
+                                <strong>Standart variantlar:</strong> Hech qachon, Ba'zida, Ko'pincha, Doimo (avtomatik qo'shiladi)
                             </div>
                         </div>
                     ` : ''}
@@ -1138,15 +1180,17 @@
             
             const surveyQuestions = questions.map(q => {
                 let options = [];
+                let rows = [];
                 
-                // Likert scale uchun standart variantlar
-                if (q.type === 'likert') {
+                // Matrix savol uchun standart variantlar va qatorlar
+                if (q.type === 'matrix') {
                     options = [
                         { optionText: 'Hech qachon', votes: 0 },
                         { optionText: 'Ba\'zida', votes: 0 },
                         { optionText: 'Ko\'pincha', votes: 0 },
                         { optionText: 'Doimo', votes: 0 }
                     ];
+                    rows = q.rows ? q.rows.filter(r => r.trim()) : [];
                 } else {
                     options = q.options.filter(o => o.trim()).map(opt => ({ optionText: opt.trim(), votes: 0 }));
                 }
@@ -1154,7 +1198,8 @@
                 return {
                     questionText: q.text.trim(),
                     questionType: q.type,
-                    options: options
+                    options: options,
+                    rows: rows
                 };
             });
             
@@ -1391,20 +1436,21 @@
             const rows = [];
             
             // Header row
-            rows.push(['№', 'So\'rovnoma', 'Savol', 'Savol turi', 'Javob', 'Ovozlar soni', 'Foiz', 'Sana']);
+            rows.push(['№', 'So\'rovnoma', 'Savol', 'Savol turi', 'Holat/Qator', 'Javob', 'Ovozlar soni', 'Foiz', 'Sana']);
             
             let rowNum = 1;
             surveysData.forEach(survey => {
                 survey.questions.forEach(question => {
-                    if (question.questionType === 'text' || question.questionType === 'likert') {
-                        // Text yoki Likert savollari - barcha javoblarni ko'rsatish
+                    if (question.questionType === 'text') {
+                        // Text savollar - barcha javoblarni ko'rsatish
                         const answers = question.textAnswers || [];
                         if (answers.length === 0) {
                             rows.push([
                                 rowNum++,
                                 survey.title,
                                 question.questionText,
-                                question.questionType === 'text' ? 'Matnli' : 'Likert',
+                                'Matnli',
+                                '-',
                                 'Javob yo\'q',
                                 0,
                                 '0%',
@@ -1416,7 +1462,8 @@
                                     rowNum++,
                                     survey.title,
                                     question.questionText,
-                                    question.questionType === 'text' ? 'Matnli' : 'Likert',
+                                    'Matnli',
+                                    '-',
                                     answer,
                                     answers.length,
                                     '100%',
@@ -1424,19 +1471,62 @@
                                 ]);
                             });
                         }
+                    } else if (question.questionType === 'matrix') {
+                        // Matrix savol - har bir holat uchun alohida qator
+                        const matrixRows = question.rows || [];
+                        matrixRows.forEach(matrixRow => {
+                            // Ushbu holat uchun variantlar bo'yicha ovozlar
+                            const rowOptions = question.options || [];
+                            const totalRowVotes = rowOptions.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+                            
+                            if (totalRowVotes === 0) {
+                                rows.push([
+                                    rowNum++,
+                                    survey.title,
+                                    question.questionText,
+                                    'Matrix',
+                                    matrixRow,
+                                    'Javob yo\'q',
+                                    0,
+                                    '0%',
+                                    new Date().toLocaleDateString('uz-UZ')
+                                ]);
+                            } else {
+                                rowOptions.forEach(option => {
+                                    // Matrix uchun foizni hisoblash
+                                    const optionVotes = option.votes || 0;
+                                    // Matrix uchun barcha javoblarni hisobga olish
+                                    const allVotes = rowOptions.reduce((sum, o) => sum + (o.votes || 0), 0);
+                                    const percentage = allVotes > 0 ? ((optionVotes / allVotes) * 100).toFixed(1) + '%' : '0%';
+                                    
+                                    if (optionVotes > 0) {
+                                        rows.push([
+                                            rowNum++,
+                                            survey.title,
+                                            question.questionText,
+                                            'Matrix',
+                                            matrixRow,
+                                            option.optionText,
+                                            optionVotes,
+                                            percentage,
+                                            new Date().toLocaleDateString('uz-UZ')
+                                        ]);
+                                    }
+                                });
+                            }
+                        });
                     } else {
                         // Radio/Checkbox savollari
                         question.options.forEach(option => {
                             if (option.votes > 0) {
-                                const percentage = question.questionType === 'radio' || question.questionType === 'likert' 
-                                    ? ((option.votes / question.options.reduce((sum, o) => sum + o.votes, 0)) * 100).toFixed(1) + '%'
-                                    : ((option.votes / question.options.reduce((sum, o) => sum + o.votes, 0)) * 100).toFixed(1) + '%';
+                                const percentage = ((option.votes / question.options.reduce((sum, o) => sum + o.votes, 0)) * 100).toFixed(1) + '%';
                                 
                                 rows.push([
                                     rowNum++,
                                     survey.title,
                                     question.questionText,
                                     question.questionType === 'radio' ? 'Bitta tanlov' : 'Ko\'p tanlov',
+                                    '-',
                                     option.optionText,
                                     option.votes,
                                     percentage,
