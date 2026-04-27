@@ -169,9 +169,16 @@ router.post('/surveys', authenticateAdmin, upload.single('image'), async (req, r
       }
       
       // Radio va checkbox uchun options kerak
-      if (q.questionType !== 'text' && q.questionType !== 'likert') {
+      if (q.questionType !== 'text' && q.questionType !== 'matrix') {
         if (!q.options || !Array.isArray(q.options) || q.options.length === 0) {
           return res.status(400).json({ error: `${i + 1}-savol uchun variantlar kerak` });
+        }
+      }
+      
+      // Matrix uchun rows (qatorlar) kerak
+      if (q.questionType === 'matrix') {
+        if (!q.rows || !Array.isArray(q.rows) || q.rows.length === 0) {
+          return res.status(400).json({ error: `${i + 1}-Matrix savol uchun kamida bitta holat (qator) kerak` });
         }
       }
     }
