@@ -1067,8 +1067,9 @@
                         <option value="radio" ${q.type === 'radio' ? 'selected' : ''}>Bitta tanlov (Radio)</option>
                         <option value="checkbox" ${q.type === 'checkbox' ? 'selected' : ''}>Ko'p tanlov (Checkbox)</option>
                         <option value="text" ${q.type === 'text' ? 'selected' : ''}>Matnli javob</option>
+                        <option value="likert" ${q.type === 'likert' ? 'selected' : ''}>Likert Scale (Hech qachon-Doimo)</option>
                     </select>
-                    ${q.type !== 'text' ? `
+                    ${q.type !== 'text' && q.type !== 'likert' ? `
                         <div class="space-y-2">
                             <p class="text-sm font-semibold text-gray-600">Variantlar:</p>
                             ${q.options.map((opt, oIndex) => `
@@ -1082,6 +1083,15 @@
                             <button type="button" onclick="addOption(${qIndex})" class="text-blue-600 hover:text-blue-800 text-sm">
                                 + Variant qo'shish
                             </button>
+                        </div>
+                    ` : ''}
+                    ${q.type === 'likert' ? `
+                        <div class="space-y-2">
+                            <p class="text-sm font-semibold text-gray-600">Likert variantlari (standart):</p>
+                            <div class="text-sm text-gray-500">Hech qachon, Ba'zida, Ko'pincha, Doimo</div>
+                            <div class="bg-blue-50 p-3 rounded text-sm text-blue-700">
+                                Likert scale savollari uchun standart variantlar avtomatik qo'shiladi.
+                            </div>
                         </div>
                     ` : ''}
                 </div>
@@ -1126,11 +1136,27 @@
                 formData.append('image', imageFile);
             }
             
-            const surveyQuestions = questions.map(q => ({
-                questionText: q.text.trim(),
-                questionType: q.type,
-                options: q.options.filter(o => o.trim()).map(opt => ({ optionText: opt.trim(), votes: 0 }))
-            }));
+            const surveyQuestions = questions.map(q => {
+                let options = [];
+                
+                // Likert scale uchun standart variantlar
+                if (q.type === 'likert') {
+                    options = [
+                        { optionText: 'Hech qachon', votes: 0 },
+                        { optionText: 'Ba\'zida', votes: 0 },
+                        { optionText: 'Ko\'pincha', votes: 0 },
+                        { optionText: 'Doimo', votes: 0 }
+                    ];
+                } else {
+                    options = q.options.filter(o => o.trim()).map(opt => ({ optionText: opt.trim(), votes: 0 }));
+                }
+                
+                return {
+                    questionText: q.text.trim(),
+                    questionType: q.type,
+                    options: options
+                };
+            });
             
             formData.append('questions', JSON.stringify(surveyQuestions));
             
@@ -1361,19 +1387,74 @@
         }
 
         function exportResponsesCSV() {
-            let csv = 'So\'rovnoma,Savol,Variant,Ovozlar,Sana\n';
+            // Professional Excel export with proper formatting
+            const rows = [];
+            
+            // Header row
+            rows.push(['№', 'So\'rovnoma', 'Savol', 'Savol turi', 'Javob', 'Ovozlar soni', 'Foiz', 'Sana']);
+            
+            let rowNum = 1;
             surveysData.forEach(survey => {
                 survey.questions.forEach(question => {
-                    question.options.forEach(option => {
-                        if (option.votes > 0) {
-                            csv += `"${survey.title}","${question.questionText}","${option.optionText}",${option.votes},${new Date().toLocaleDateString('uz-UZ')}\n`;
+                    if (question.questionType === 'text' || question.questionType === 'likert') {
+                        // Text yoki Likert savollari - barcha javoblarni ko'rsatish
+                        const answers = question.textAnswers || [];
+                        if (answers.length === 0) {
+                            rows.push([
+                                rowNum++,
+                                survey.title,
+                                question.questionText,
+                                question.questionType === 'text' ? 'Matnli' : 'Likert',
+                                'Javob yo\'q',
+                                0,
+                                '0%',
+                                new Date().toLocaleDateString('uz-UZ')
+                            ]);
+                        } else {
+                            answers.forEach((answer, idx) => {
+                                rows.push([
+                                    rowNum++,
+                                    survey.title,
+                                    question.questionText,
+                                    question.questionType === 'text' ? 'Matnli' : 'Likert',
+                                    answer,
+                                    answers.length,
+                                    '100%',
+                                    new Date().toLocaleDateString('uz-UZ')
+                                ]);
+                            });
                         }
-                    });
+                    } else {
+                        // Radio/Checkbox savollari
+                        question.options.forEach(option => {
+                            if (option.votes > 0) {
+                                const percentage = question.questionType === 'radio' || question.questionType === 'likert' 
+                                    ? ((option.votes / question.options.reduce((sum, o) => sum + o.votes, 0)) * 100).toFixed(1) + '%'
+                                    : ((option.votes / question.options.reduce((sum, o) => sum + o.votes, 0)) * 100).toFixed(1) + '%';
+                                
+                                rows.push([
+                                    rowNum++,
+                                    survey.title,
+                                    question.questionText,
+                                    question.questionType === 'radio' ? 'Bitta tanlov' : 'Ko\'p tanlov',
+                                    option.optionText,
+                                    option.votes,
+                                    percentage,
+                                    new Date().toLocaleDateString('uz-UZ')
+                                ]);
+                            }
+                        });
+                    }
                 });
             });
             
-            downloadFile(csv, 'javoblar.csv', 'text/csv');
-            loadAuditLog('admin', 'CSV eksport', 'Javoblar CSV formatda eksport qilindi');
+            // Excel uchun BOM qo'shish (UTF-8)
+            const csvContent = '\uFEFF' + rows.map(row => 
+                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+            
+            downloadFile(csvContent, 'javoblar_professional.csv', 'text/csv;charset=utf-8;');
+            loadAuditLog('admin', 'CSV eksport', 'Javoblar professional CSV formatda eksport qilindi');
         }
 
         // Statistics Section
