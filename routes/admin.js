@@ -18,7 +18,16 @@ async function attachVotesToSurvey(surveyDoc) {
           questionId: '$questionId',
           optionId: '$optionId'
         },
-        votes: { $sum: 1 }
+        votes: { $sum: 1 },
+        textAnswers: {
+          $push: {
+            $cond: [
+              { $eq: ['$questionType', 'text'] },
+              '$answer',
+              null
+            ]
+          }
+        }
       }
     }
   ]);
@@ -26,15 +35,24 @@ async function attachVotesToSurvey(surveyDoc) {
   const voteMap = new Map();
   counts.forEach(item => {
     const key = `${item._id.questionId}::${item._id.optionId}`;
-    voteMap.set(key, item.votes);
+    voteMap.set(key, { votes: item.votes, textAnswers: item.textAnswers.filter(t => t) });
   });
 
   survey.questions = (survey.questions || []).map(question => ({
     ...question,
-    options: (question.options || []).map(option => ({
-      ...option,
-      votes: voteMap.get(`${question._id}::${option.optionText}`) || 0
-    }))
+    options: (question.options || []).map(option => {
+      const data = voteMap.get(`${question._id}::${option.optionText}`);
+      return {
+        ...option,
+        votes: data ? data.votes : 0,
+        textAnswers: data ? data.textAnswers : []
+      };
+    }),
+    textAnswers: question.questionType === 'text' || question.questionType === 'likert'
+      ? counts
+          .filter(c => c._id.questionId === String(question._id))
+          .flatMap(c => c.textAnswers.filter(t => t))
+      : []
   }));
 
   return survey;
@@ -151,7 +169,7 @@ router.post('/surveys', authenticateAdmin, upload.single('image'), async (req, r
       }
       
       // Radio va checkbox uchun options kerak
-      if (q.questionType !== 'text') {
+      if (q.questionType !== 'text' && q.questionType !== 'likert') {
         if (!q.options || !Array.isArray(q.options) || q.options.length === 0) {
           return res.status(400).json({ error: `${i + 1}-savol uchun variantlar kerak` });
         }
