@@ -304,9 +304,9 @@
                                     <select id="filterSurvey" onchange="loadResponses()" class="px-3 py-2 border border-gray-300 rounded-lg">
                                         <option value="">Barcha so'rovnomalar</option>
                                     </select>
-                                    <button onclick="exportResponsesCSV()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-                                        <i class="fas fa-download mr-2"></i>CSV Yuklab Olish
-                                    </button>
+                                        <button onclick="exportResponsesCSV()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                                            <i class="fas fa-file-excel mr-2"></i>Professional Excel
+                                        </button>
                                 </div>
                             </div>
                             <div class="overflow-x-auto">
@@ -1431,122 +1431,111 @@
             }
         }
 
-        function exportResponsesCSV() {
-            // Professional Excel export with proper formatting
-            const rows = [];
-            
-            // Header row
-            rows.push(['№', 'So\'rovnoma', 'Savol', 'Savol turi', 'Holat/Qator', 'Javob', 'Ovozlar soni', 'Foiz', 'Sana']);
-            
-            let rowNum = 1;
-            surveysData.forEach(survey => {
-                survey.questions.forEach(question => {
-                    if (question.questionType === 'text') {
-                        // Text savollar - barcha javoblarni ko'rsatish
-                        const answers = question.textAnswers || [];
-                        if (answers.length === 0) {
-                            rows.push([
-                                rowNum++,
-                                survey.title,
-                                question.questionText,
-                                'Matnli',
-                                '-',
-                                'Javob yo\'q',
-                                0,
-                                '0%',
-                                new Date().toLocaleDateString('uz-UZ')
-                            ]);
-                        } else {
-                            answers.forEach((answer, idx) => {
-                                rows.push([
-                                    rowNum++,
-                                    survey.title,
-                                    question.questionText,
-                                    'Matnli',
-                                    '-',
-                                    answer,
-                                    answers.length,
-                                    '100%',
-                                    new Date().toLocaleDateString('uz-UZ')
-                                ]);
-                            });
-                        }
-                    } else if (question.questionType === 'matrix') {
-                        // Matrix savol - har bir holat uchun alohida qator
-                        const matrixRows = question.rows || [];
-                        matrixRows.forEach(matrixRow => {
-                            // Ushbu holat uchun variantlar bo'yicha ovozlar
-                            const rowOptions = question.options || [];
-                            const totalRowVotes = rowOptions.reduce((sum, opt) => sum + (opt.votes || 0), 0);
-                            
-                            if (totalRowVotes === 0) {
-                                rows.push([
-                                    rowNum++,
-                                    survey.title,
-                                    question.questionText,
-                                    'Matrix',
-                                    matrixRow,
-                                    'Javob yo\'q',
-                                    0,
-                                    '0%',
-                                    new Date().toLocaleDateString('uz-UZ')
-                                ]);
-                            } else {
-                                rowOptions.forEach(option => {
-                                    // Matrix uchun foizni hisoblash
-                                    const optionVotes = option.votes || 0;
-                                    // Matrix uchun barcha javoblarni hisobga olish
-                                    const allVotes = rowOptions.reduce((sum, o) => sum + (o.votes || 0), 0);
-                                    const percentage = allVotes > 0 ? ((optionVotes / allVotes) * 100).toFixed(1) + '%' : '0%';
-                                    
-                                    if (optionVotes > 0) {
-                                        rows.push([
-                                            rowNum++,
-                                            survey.title,
-                                            question.questionText,
-                                            'Matrix',
-                                            matrixRow,
-                                            option.optionText,
-                                            optionVotes,
-                                            percentage,
-                                            new Date().toLocaleDateString('uz-UZ')
-                                        ]);
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        // Radio/Checkbox savollari
-                        question.options.forEach(option => {
-                            if (option.votes > 0) {
-                                const percentage = ((option.votes / question.options.reduce((sum, o) => sum + o.votes, 0)) * 100).toFixed(1) + '%';
-                                
-                                rows.push([
-                                    rowNum++,
-                                    survey.title,
-                                    question.questionText,
-                                    question.questionType === 'radio' ? 'Bitta tanlov' : 'Ko\'p tanlov',
-                                    '-',
-                                    option.optionText,
-                                    option.votes,
-                                    percentage,
-                                    new Date().toLocaleDateString('uz-UZ')
-                                ]);
-                            }
-                        });
-                    }
+        async function exportResponsesCSV() {
+            try {
+                // Backend'dan barcha javoblarni olish
+                const response = await fetch('/api/admin/export/excel-data', {
+                    headers: getAuthHeaders()
                 });
-            });
-            
-            // Excel uchun BOM qo'shish (UTF-8)
-            const csvContent = '\uFEFF' + rows.map(row => 
-                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-            ).join('\n');
-            
-            downloadFile(csvContent, 'javoblar_professional.csv', 'text/csv;charset=utf-8;');
-            loadAuditLog('admin', 'CSV eksport', 'Javoblar professional CSV formatda eksport qilindi');
-        }
+                
+                if (!response.ok) {
+                    throw new Error('Javoblarni olishda xato');
+                }
 
+                const data = await response.json();
+                const sessions = data.sessions || [];
+                
+                if (sessions.length === 0) {
+                    alert('Eksport qilish uchun javoblar yo\'q');
+                    return;
+                }
+                
+                // Barcha savollarni olish
+                const surveysResponse = await fetch('/api/admin/surveys', {
+                    headers: getAuthHeaders()
+                });
+                const surveys = await surveysResponse.json();
+                
+                // Excel uchun professional format: Har bir ishtirokchi alohida qator
+                const rows = [];
+                
+                // Header row - barcha savollar
+                const headers = ['№', 'Ishtirokchi ID', 'Sana', 'Vaqt'];
+                
+                surveys.forEach(survey => {
+                    survey.questions.forEach((question, qIndex) => {
+                        if (question.questionType === 'matrix') {
+                            // Matrix savol - har bir holat alohida ustun
+                            const matrixRows = question.rows || [];
+                            matrixRows.forEach(matrixRow => {
+                                headers.push(`${survey.title} - ${question.questionText} [${matrixRow}]`);
+                            });
+                        } else {
+                            headers.push(`${survey.title} - Savol ${qIndex + 1}: ${question.questionText}`);
+                        }
+                    });
+                });
+                
+                rows.push(headers);
+                
+                // Har bir ishtirokchi uchun qator
+                sessions.forEach((session, sessionIndex) => {
+                    const row = [
+                        sessionIndex + 1,
+                        session.sessionId.substring(0, 12) + '...',
+                        new Date(session.answers[0]?.createdAt || Date.now()).toLocaleDateString('uz-UZ'),
+                        new Date(session.answers[0]?.createdAt || Date.now()).toLocaleTimeString('uz-UZ')
+                    ];
+                    
+                    // Har bir survey va savol uchun javobni topish
+                    surveys.forEach(survey => {
+                        survey.questions.forEach((question, qIndex) => {
+                            const questionAnswers = session.answers.filter(
+                                a => String(a.questionId) === String(question._id)
+                            );
+                            
+                            if (question.questionType === 'matrix') {
+                                // Matrix: har bir holat uchun alohida javob
+                                const matrixRows = question.rows || [];
+                                matrixRows.forEach(matrixRow => {
+                                    const answer = questionAnswers.find(
+                                        a => a.textAnswer === matrixRow
+                                    );
+                                    row.push(answer ? answer.answer : '-');
+                                });
+                            } else if (question.questionType === 'checkbox') {
+                                // Checkbox: barcha tanlangan variantlar
+                                const answers = questionAnswers.map(a => a.answer).join('; ');
+                                row.push(answers || '-');
+                            } else if (question.questionType === 'text') {
+                                // Text: javob to'g'ridan-to'g'ri
+                                const answer = questionAnswers[0]?.answer || '-';
+                                row.push(answer);
+                            } else {
+                                // Radio: bitta javob
+                                const answer = questionAnswers[0]?.answer || '-';
+                                row.push(answer);
+                            }
+                        });
+                    });
+                    
+                    rows.push(row);
+                });
+                
+                // Excel uchun BOM qo'shish (UTF-8) va CSV formatlash
+                const csvContent = '\uFEFF' + rows.map(row => 
+                    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+                ).join('\n');
+                
+                downloadFile(csvContent, 'javoblar_professional.xlsx.csv', 'text/csv;charset=utf-8;');
+                loadAuditLog('admin', 'CSV eksport', 'Professional Excel formatda eksport qilindi');
+                alert(`✅ ${sessions.length} ta ishtirokchi eksport qilindi!`);
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('❌ Eksportda xato: ' + error.message);
+            }
+        }
+            
         // Statistics Section
         async function loadStatistics() {
             try {
@@ -1679,7 +1668,7 @@
                 });
                 downloadFile(csv, 'barcha_sorovnomalar.csv', 'text/csv');
             } else if (type === 'all_responses') {
-                exportResponsesCSV();
+                exportResponsesCSV(); // async bo'lgani uchun await kerak emas
             }
             loadAuditLog('admin', 'Tez eksport', `${type} eksport qilindi`);
         }
