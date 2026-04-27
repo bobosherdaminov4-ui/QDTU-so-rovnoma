@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="W0coSgSLKukIcHbDD9MJCRnJjbSmJyWZB-_iUU6d-Wc" />
     <title>Qarshi Davlat Texnika Universiteti - So'rovnoma Sayti</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -453,30 +452,37 @@
                             ${question.questionText}
                         </h4>
                         <div class="space-y-3">
-                            ${question.options.map((option, optIndex) => {
+                            ${(() => {
                                 if (question.questionType === 'radio') {
-                                    return `
+                                    return question.options.map((option, optIndex) => `
                                         <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:border-qdtu-blue hover:bg-blue-50 transition cursor-pointer">
                                             <input type="radio" name="question_${question._id}" value="${option.optionText}" required class="w-5 h-5 text-qdtu-blue focus:ring-qdtu-blue">
                                             <span class="ml-3 text-gray-700 font-medium">${String.fromCharCode(65 + optIndex)}) ${option.optionText}</span>
                                         </label>
-                                    `;
+                                    `).join('');
                                 } else if (question.questionType === 'checkbox') {
-                                    return `
+                                    return question.options.map((option, optIndex) => `
                                         <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:border-qdtu-blue hover:bg-blue-50 transition cursor-pointer">
                                             <input type="checkbox" name="question_${question._id}[]" value="${option.optionText}" class="w-5 h-5 text-qdtu-blue focus:ring-qdtu-blue">
                                             <span class="ml-3 text-gray-700 font-medium">${String.fromCharCode(65 + optIndex)}) ${option.optionText}</span>
                                         </label>
-                                    `;
+                                    `).join('');
+                                } else if (question.questionType === 'likert') {
+                                    return question.options.map((option, optIndex) => `
+                                        <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:border-qdtu-blue hover:bg-blue-50 transition cursor-pointer">
+                                            <input type="radio" name="question_${question._id}" value="${option.optionText}" required class="w-5 h-5 text-qdtu-blue focus:ring-qdtu-blue">
+                                            <span class="ml-3 text-gray-700 font-medium">${option.optionText}</span>
+                                        </label>
+                                    `).join('');
                                 } else {
                                     return `
                                         <div>
                                             <textarea name="question_${question._id}" placeholder="Javobingizni kiriting..." required 
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue focus:border-transparent"></textarea>
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-qdtu-blue focus:border-transparent" rows="3"></textarea>
                                         </div>
                                     `;
                                 }
-                            }).join('')}
+                            })()}
                         </div>
                     </div>
                 `).join('');
