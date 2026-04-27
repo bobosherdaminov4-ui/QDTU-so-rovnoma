@@ -280,7 +280,7 @@ router.post('/database/clear', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Javoblarni olish (Response collection)
+// Javoblarni olish (Response collection) - barcha detallar bilan
 router.get('/responses', authenticateAdmin, async (req, res) => {
   try {
     const { surveyId } = req.query;
@@ -291,14 +291,54 @@ router.get('/responses', authenticateAdmin, async (req, res) => {
     }
     
     const responses = await Response.find(query)
-      .populate('surveyId', 'title')
-      .sort({ createdAt: -1 })
-      .limit(100);
+      .sort({ createdAt: -1, sessionId: 1 })
+      .limit(10000);
     
     res.json(responses);
   } catch (error) {
     console.error('Get responses error:', error);
     res.status(500).json({ error: 'Javoblarni olishda xato' });
+  }
+});
+
+// Excel export uchun pivot formatda javoblar
+router.get('/export/excel-data', authenticateAdmin, async (req, res) => {
+  try {
+    const { surveyId } = req.query;
+    
+    let query = {};
+    if (surveyId) {
+      query.surveyId = surveyId;
+    }
+
+    // Barcha javoblarni olish
+    const allResponses = await Response.find(query)
+      .sort({ createdAt: 1 })
+      .limit(10000);
+    
+    // Javoblarni sessionId bo'yicha guruhlash
+    const groupedBySession = new Map();
+    
+    allResponses.forEach(response => {
+      const sessionId = response.sessionId || response.ipAddress || 'unknown';
+      
+      if (!groupedBySession.has(sessionId)) {
+        groupedBySession.set(sessionId, []);
+      }
+      
+      groupedBySession.get(sessionId).push(response);
+    });
+    
+    res.json({ 
+      sessions: Array.from(groupedBySession.entries()).map(([sessionId, answers]) => ({
+        sessionId,
+        answers,
+        answerCount: answers.length
+      }))
+    });
+  } catch (error) {
+    console.error('Export excel data error:', error);
+    res.status(500).json({ error: 'Excel ma\'lumotlarini olishda xato' });
   }
 });
 
