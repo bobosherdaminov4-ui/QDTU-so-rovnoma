@@ -467,13 +467,42 @@
                                             <span class="ml-3 text-gray-700 font-medium">${String.fromCharCode(65 + optIndex)}) ${option.optionText}</span>
                                         </label>
                                     `).join('');
-                                } else if (question.questionType === 'likert') {
-                                    return question.options.map((option, optIndex) => `
-                                        <label class="flex items-center p-3 rounded-lg border border-gray-200 hover:border-qdtu-blue hover:bg-blue-50 transition cursor-pointer">
-                                            <input type="radio" name="question_${question._id}" value="${option.optionText}" required class="w-5 h-5 text-qdtu-blue focus:ring-qdtu-blue">
-                                            <span class="ml-3 text-gray-700 font-medium">${option.optionText}</span>
-                                        </label>
-                                    `).join('');
+                                } else if (question.questionType === 'matrix') {
+                                    // Matrix savol - jadval ko'rinishida
+                                    const columns = question.options || [
+                                        { optionText: 'Hech qachon' },
+                                        { optionText: 'Ba\'zida' },
+                                        { optionText: 'Ko\'pincha' },
+                                        { optionText: 'Doimo' }
+                                    ];
+                                    const rows = question.rows || [];
+                                    
+                                    return `
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full border-collapse">
+                                                <thead>
+                                                    <tr class="bg-gray-100">
+                                                        <th class="border border-gray-300 p-3 text-left min-w-[200px]">Holat</th>
+                                                        ${columns.map(col => `
+                                                            <th class="border border-gray-300 p-3 text-center">${col.optionText}</th>
+                                                        `).join('')}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${rows.map((row, rIndex) => `
+                                                        <tr class="${rIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                                            <td class="border border-gray-300 p-3 font-medium">${row}</td>
+                                                            ${columns.map((col, cIndex) => `
+                                                                <td class="border border-gray-300 p-3 text-center">
+                                                                    <input type="radio" name="question_${question._id}_${rIndex}" value="${col.optionText}" required class="w-5 h-5 text-qdtu-blue focus:ring-qdtu-blue">
+                                                                </td>
+                                                            `).join('')}
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    `;
                                 } else {
                                     return `
                                         <div>
@@ -521,6 +550,20 @@
                             });
                         });
                     }
+                } else if (question.questionType === 'matrix') {
+                    // Matrix savol - har bir qator uchun alohida javob
+                    const rows = question.rows || [];
+                    rows.forEach((row, rIndex) => {
+                        const selected = formData.get(`question_${question._id}_${rIndex}`);
+                        if (selected) {
+                            answers.push({
+                                questionId: question._id,
+                                selectedOption: selected,
+                                textAnswer: row, // Holat nomi
+                                matrixRowIndex: rIndex
+                            });
+                        }
+                    });
                 } else {
                     const selected = formData.get(`question_${question._id}`);
                     if (selected) {
